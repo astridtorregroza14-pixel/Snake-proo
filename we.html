@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Runner 3D FIX</title>
+
+<style>
+body { margin:0; overflow:hidden; font-family:Arial; background:black; }
+
+#menu, #shop {
+  position:absolute; width:100%; height:100%;
+  display:flex; flex-direction:column;
+  justify-content:center; align-items:center;
+  background:linear-gradient(#1e3c72,#2a5298);
+  color:white; z-index:10;
+}
+
+button {
+  padding:10px 20px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
+  background:orange;
+  color:white;
+}
+
+#skinsBar{
+  display:flex;
+  overflow-x:auto;
+  width:90%;
+  gap:10px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>Runner 3D</h1>
+  <button onclick="startGame()">Jugar</button>
+  <button onclick="openShop()">Tienda</button>
+</div>
+
+<div id="shop" style="display:none;">
+  <button onclick="backMenu()">❌ Salir</button>
+
+  <h2>Skins</h2>
+  <div id="skinsBar"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+
+<script>
+
+// ===== VARIABLES =====
+let scene, camera, renderer, player;
+let currentSkin = 0;
+
+// 🔥 30 FORMAS
+const shapes = [
+
+()=>new THREE.BoxGeometry(1,1,1),
+()=>new THREE.SphereGeometry(0.6,16,16),
+()=>new THREE.ConeGeometry(0.6,1.2,8),
+()=>new THREE.CylinderGeometry(0.5,0.5,1,16),
+
+()=>new THREE.TorusGeometry(0.5,0.2,16,32),
+()=>new THREE.TorusKnotGeometry(0.4,0.15,100,16),
+
+()=>new THREE.IcosahedronGeometry(0.7),
+()=>new THREE.DodecahedronGeometry(0.7),
+()=>new THREE.OctahedronGeometry(0.7),
+()=>new THREE.TetrahedronGeometry(0.7),
+
+()=>new THREE.SphereGeometry(0.6,8,8),
+()=>new THREE.SphereGeometry(0.6,32,32),
+()=>new THREE.BoxGeometry(1,2,0.5),
+()=>new THREE.BoxGeometry(0.5,2,1),
+()=>new THREE.ConeGeometry(0.4,1.5,16),
+
+()=>new THREE.TorusGeometry(0.6,0.1,8,100),
+()=>new THREE.TorusKnotGeometry(0.5,0.2,200,32),
+
+()=>new THREE.CylinderGeometry(0.2,0.8,1.5,12),
+()=>new THREE.CylinderGeometry(0.8,0.2,1.5,12),
+
+()=>new THREE.RingGeometry(0.3,0.7,32),
+()=>new THREE.CircleGeometry(0.7,32),
+
+()=>new THREE.PlaneGeometry(1,1),
+
+()=>new THREE.BoxGeometry(Math.random()+0.5,1,Math.random()+0.5),
+()=>new THREE.ConeGeometry(Math.random(),1.2,8),
+
+()=>new THREE.CylinderGeometry(0.3,0.3,2,6),
+()=>new THREE.OctahedronGeometry(1),
+()=>new THREE.DodecahedronGeometry(1),
+()=>new THREE.IcosahedronGeometry(1),
+
+()=>new THREE.SphereGeometry(0.5,20,20),
+()=>new THREE.TorusGeometry(0.4,0.15,20,40)
+
+];
+
+// ===== MENÚ =====
+function startGame(){
+  menu.style.display="none";
+  initGame();
+}
+
+function openShop(){
+  menu.style.display="none";
+  shop.style.display="flex";
+  createBar();
+}
+
+function backMenu(){
+  shop.style.display="none";
+  menu.style.display="flex";
+}
+
+// ===== BARRA SKINS =====
+function createBar(){
+  skinsBar.innerHTML="";
+
+  shapes.forEach((s, i)=>{
+    let btn=document.createElement("div");
+    btn.style.minWidth="60px";
+    btn.style.height="60px";
+    btn.style.background="#333";
+    btn.style.display="flex";
+    btn.style.alignItems="center";
+    btn.style.justifyContent="center";
+
+    btn.innerText=i;
+
+    btn.onclick=()=>{
+      currentSkin=i;
+    };
+
+    skinsBar.appendChild(btn);
+  });
+}
+
+// ===== JUEGO =====
+function initGame(){
+
+  scene=new THREE.Scene();
+
+  camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+  camera.position.z=5;
+
+  renderer=new THREE.WebGLRenderer();
+  renderer.setSize(innerWidth,innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // luz (CLAVE)
+  const light=new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(5,5,5);
+  scene.add(light);
+
+  const ambient=new THREE.AmbientLight(0xffffff,0.5);
+  scene.add(ambient);
+
+  createPlayer();
+
+  animate();
+}
+
+function createPlayer(){
+
+  if(player){
+    scene.remove(player);
+  }
+
+  player=new THREE.Mesh(
+    shapes[currentSkin](),
+    new THREE.MeshStandardMaterial({color:0xffd700})
+  );
+
+  scene.add(player);
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+
+  if(player){
+    player.rotation.x+=0.01;
+    player.rotation.y+=0.02;
+  }
+
+  renderer.render(scene,camera);
+}
+
+</script>
+
+</body>
+</html>
